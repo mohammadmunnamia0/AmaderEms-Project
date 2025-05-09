@@ -1,0 +1,20 @@
+[
+    {
+        "domain": "ems-test.amaderit.net",
+        "httpOnly": true,
+        "name": "csrfToken",
+        "path": "/",
+        "sameSite": "Lax",
+        "secure": true,
+        "value": "dd9766e02878b58e3aadb96678eed6944dee8e9d26ec6c0d652a79f277f8990463e541efa460a2071733395c1db8401089e653c3adac5eb211c33511fc6e142a"
+    },
+    {
+        "domain": "ems-test.amaderit.net",
+        "httpOnly": true,
+        "name": "CAKEPHP",
+        "path": "/",
+        "sameSite": "Lax",
+        "secure": true,
+        "value": "9f9c67045034c352902c89bef4e378c5"
+    }
+]
