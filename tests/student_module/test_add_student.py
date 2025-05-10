@@ -13,7 +13,7 @@ dummy_student = {
     "phone": "01821097155",
     "father": "Karim Akter",
     "mother": "Rahim Hasan",
-    "guardian": "Rahim Miah"
+    "guardian": "Rahim "
 }
 
 @pytest.mark.parametrize("run", [1])
