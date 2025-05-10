@@ -1,36 +1,52 @@
 import pytest
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select
-import time
+from selenium.webdriver.support.ui import Select, WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
-@pytest.mark.parametrize("run", [1])  # Ensures pytest collects the test
-def test_course_advising(driver, run):  # driver fixture comes from conftest.py
-    # Navigate directly to the course advising page (assuming cookies/login handled in conftest)
+@pytest.mark.parametrize("run", [1])
+def test_course_advising(driver, run):
+    wait = WebDriverWait(driver, 10)
+
+    # Go to the course advising page
     driver.get("https://ems-test.amaderit.net/administer/Students/studentCourseAdvising")
-    time.sleep(2)
 
-    # Select dropdowns with some wait in between
-    Select(driver.find_element(By.ID, "campus_id")).select_by_visible_text("BAF SEMC_jnu-2")
-    time.sleep(1)
-    Select(driver.find_element(By.ID, "shift_id")).select_by_visible_text("Morning")
-    time.sleep(1)
-    Select(driver.find_element(By.ID, "medium_id")).select_by_visible_text("English")
-    time.sleep(1)
-    Select(driver.find_element(By.ID, "education_level_id")).select_by_visible_text("Pre-Primary")
-    time.sleep(1)
-    Select(driver.find_element(By.ID, "department_id")).select_by_visible_text("Default")
-    time.sleep(1)
-    Select(driver.find_element(By.ID, "class_name_id")).select_by_visible_text("Play")
-    time.sleep(1)
-    Select(driver.find_element(By.ID, "section_id")).select_by_visible_text("Green")
-    time.sleep(1)
-    Select(driver.find_element(By.ID, "session_id")).select_by_visible_text("2024")
-    time.sleep(2)
+    # Helper to select from dropdown with wait
+    def select_dropdown(by_id, visible_text=None, index=None):
+        wait.until(EC.presence_of_element_located((By.ID, by_id)))
+        dropdown = Select(driver.find_element(By.ID, by_id))
+        if visible_text:
+            dropdown.select_by_visible_text(visible_text)
+        elif index is not None:
+            dropdown.select_by_index(index)
 
-    # Select a student and click the "Show" button
-    Select(driver.find_element(By.ID, "student_id")).select_by_index(1)
-    time.sleep(2)
+    # All dropdown selections
+    dropdowns = {
+        "campus_id": "BAF SEMC_jnu-2",
+        "shift_id": "Morning",
+        "medium_id": "English",
+        "education_level_id": "Pre-Primary",
+        "department_id": "Default",
+        "class_name_id": "Play",
+        "section_id": "Green",
+        "session_id": "2024",
+    }
 
-    driver.find_element(By.XPATH, "//a[@id='trigger-load-course']").click()
-    time.sleep(3)
+    for field_id, visible_text in dropdowns.items():
+        select_dropdown(field_id, visible_text=visible_text)
+
+    # Select student (1st option excluding placeholder)
+    select_dropdown("student_id", index=1)
+
+    # Click on "Load Course" button
+    load_course_btn = wait.until(EC.element_to_be_clickable((By.ID, "trigger-load-course")))
+    load_course_btn.click()
+
+    # Wait for course list or some table to appear (adjust selector if needed)
+    wait.until(
+        EC.presence_of_element_located(
+            (By.XPATH, "//table[contains(@class, 'table') or contains(text(), 'No Course Found')]")
+        )
+    )
+
+    print("Course advising data loaded successfully.")

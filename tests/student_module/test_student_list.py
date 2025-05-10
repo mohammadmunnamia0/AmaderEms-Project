@@ -2,49 +2,47 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time
 
+# Initialize browser
 driver = webdriver.Chrome()
-# driver.get("https://ems-test.amaderit.net/")  # Adjust if already logged in
-#
-# # Optional: login if needed
-# driver.find_element(By.ID, "username").send_keys("adming2")
-# driver.find_element(By.ID, "password").send_keys("12345678")
-# driver.find_element(By.XPATH, "//button[normalize-space()='Sign In']").click()
-# time.sleep(2)
+wait = WebDriverWait(driver, 10)
 
-# Navigate to student list page
+# Step 1: Navigate to student list page
 driver.get("https://ems-test.amaderit.net/administer/Students/index")
-time.sleep(2)  # Wait for page load
 
-# Select dropdown values (use actual values from your system)
-Select(driver.find_element(By.ID, "campus_id")).select_by_visible_text("BAF SEMC_jnu-2")
-time.sleep(2)
-Select(driver.find_element(By.ID, "shift_id")).select_by_visible_text("Morning")
-time.sleep(2)
-Select(driver.find_element(By.ID, "medium_id")).select_by_visible_text("English")
-time.sleep(2)
-Select(driver.find_element(By.ID, "education_level_id")).select_by_visible_text("Pre-Primary")
-time.sleep(2)
-Select(driver.find_element(By.ID, "department_id")).select_by_visible_text("Default")
-time.sleep(2)
-Select(driver.find_element(By.ID, "class_name_id")).select_by_visible_text("Play")
-time.sleep(2)
-Select(driver.find_element(By.ID, "section_id")).select_by_visible_text("Orange")
-time.sleep(2)
-Select(driver.find_element(By.ID, "session_id")).select_by_visible_text("2025")
-time.sleep(2)
+# Helper function to select dropdown by visible text
+def select_dropdown(by_id, visible_text):
+    wait.until(EC.presence_of_element_located((By.ID, by_id)))
+    Select(driver.find_element(By.ID, by_id)).select_by_visible_text(visible_text)
 
-# Click the "Load Student" button
-driver.find_element(By.XPATH, "//button[@type='button']").click()
+# Step 2: Select dropdown values with proper waiting
+dropdowns = {
+    "campus_id": "BAF SEMC_jnu-2",
+    "shift_id": "Morning",
+    "medium_id": "English",
+    "education_level_id": "Pre-Primary",
+    "department_id": "Default",
+    "class_name_id": "Play",
+    "section_id": "Orange",
+    "session_id": "2025"
+}
 
-# Wait for student table to update (you can fine-tune this wait)
-#WebDriverWait(driver, 10).until(
-#    EC.presence_of_element_located((
-#        By.XPATH,
-#        "//table[@id='DataTables_Table_0']//tbody/tr | //td[contains(text(), 'No matching records')]"
-#    ))
-#)
+for key, value in dropdowns.items():
+    select_dropdown(key, value)
 
+# Step 3: Click the "Load Student" button (make sure it's the right one)
+load_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@type='button' and contains(text(),'Load Student')]")))
+load_button.click()
 
+# Step 4: Wait for table to load or show "No matching records"
+wait.until(
+    EC.any_of(
+        EC.presence_of_element_located((By.XPATH, "//table[@id='DataTables_Table_0']//tbody/tr")),
+        EC.presence_of_element_located((By.XPATH, "//td[contains(text(), 'No matching records')]"))
+    )
+)
+
+print("Student list loaded.")
+
+# Done
 driver.quit()
